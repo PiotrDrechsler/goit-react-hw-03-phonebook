@@ -20,6 +20,26 @@ export class App extends Component {
     };
   }
 
+  componentDidMount() {
+    try {
+      const json = localStorage.getItem('contacts');
+      const contacts = JSON.parse(json);
+
+      if (contacts) {
+        this.setState(() => ({ contacts: contacts }));
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  componentDidUpdate(prevState) {
+    if (prevState.contacts !== this.state.contacts) {
+      const json = JSON.stringify(this.state.contacts);
+      localStorage.setItem('contacts', json);
+    }
+  }
+
   addContact = event => {
     const loweredCase = event.name.toLowerCase().trim();
 
