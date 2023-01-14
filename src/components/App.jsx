@@ -1,94 +1,73 @@
 import { Component } from 'react';
 
-// import { Counter } from './Counter/Counter';
-// import { ErrorBoundary } from './ErrorBoundary/ErrorBoundary';
-import { ArticleList } from './ArticleList/ArticleList';
-import { fetchArticlesByTopic } from '../services/api';
+import { ContactForm } from './ContactForm/ContactForm';
+import { ContactList } from './ContactList/ContactList';
+import { Filter } from './Filter/Filter';
+
+import s from '../App.module.css';
 
 export class App extends Component {
-  state = {
-    articles: [],
-    topic: 'react',
-    isLoading: false,
-    error: null,
-  };
-
-  async componentDidMount() {
-    this.setState({ isLoading: true });
-
-    try {
-      const articles = await fetchArticlesByTopic(this.state.topic);
-      this.setState({ articles, isLoading: false });
-    } catch (error) {
-      console.log('Error: ', error);
-      this.setState({ error });
-    } finally {
-      this.setState({ isLoading: false });
-    }
+  constructor() {
+    super();
+    this.state = {
+      contacts: [
+        { id: 'id-1', name: 'Rosie Simpson', number: '459-12-56' },
+        { id: 'id-2', name: 'Hermione Kline', number: '443-89-12' },
+        { id: 'id-3', name: 'Eden Clements', number: '645-17-79' },
+        { id: 'id-4', name: 'Annie Copeland', number: '227-91-26' },
+      ],
+      filter: '',
+    };
   }
-  updateArticles = topic => {
-    console.log('updateArticles', topic);
-    this.setState({ topic, isLoading: true }, async () => {
-      const articles = await fetchArticlesByTopic(this.state.topic);
-      this.setState({ articles, isLoading: false });
-    });
+
+  addContact = event => {
+    const loweredCase = event.name.toLowerCase().trim();
+
+    const exists = this.state.contacts.some(
+      contact => contact.name.toLowerCase().trim() === loweredCase
+    );
+
+    if (exists) {
+      alert(`${event.name} is already in contacts!`);
+    } else {
+      this.setState(({ contacts }) => ({
+        contacts: [...contacts, event],
+      }));
+    }
   };
+
+  addFilter = event => {
+    this.setState({ filter: event.currentTarget.value });
+  };
+
+  filteredContacts = () => {
+    const { filter, contacts } = this.state;
+
+    return contacts.filter(contact =>
+      contact.name.toLowerCase().includes(filter.toLowerCase())
+    );
+  };
+
+  deleteContact = id =>
+    this.setState(({ contacts }) => ({
+      contacts: contacts.filter(contact => contact.id !== id),
+    }));
 
   render() {
-    const { articles, topic, isLoading, error } = this.state;
+    const { filter } = this.state;
+
     return (
-      <>
-        <h1>Working F I N E!</h1>
-        <button
-          onClick={() => {
-            this.updateArticles('react');
-          }}
-        >
-          React
-        </button>
-        <button
-          onClick={() => {
-            this.updateArticles('css');
-          }}
-        >
-          CSS
-        </button>
-        <button
-          onClick={() => {
-            this.updateArticles('sex');
-          }}
-        >
-          SEX
-        </button>
-
-        {error && <div>Something went wrong :(</div>}
-
-        {isLoading ? (
-          <p>Please wait...</p>
-        ) : (
-          <div>
-            {articles.length > 0 && (
-              <ArticleList articles={articles} topic={topic} />
-            )}
-          </div>
-        )}
-
-        {/* <div style={{ padding: '20px', border: '1px solid red' }}>
-          {this.state.showCounter && (
-            <ErrorBoundary>
-              <Counter callWhenReady={() => console.log('OK Ready!!!')} />
-            </ErrorBoundary>
-          )}
+      <section className={s.content}>
+        <div className={s.content__container}>
+          <ContactForm addContact={this.addContact} />
+          <ContactList
+            contacts={this.filteredContacts()}
+            deleteContact={this.deleteContact}
+          >
+            <Filter filter={filter} addFilter={this.addFilter} />
+          </ContactList>
         </div>
-
-        <button
-          onClick={() => {
-            this.setState({ showCounter: !this.state.showCounter });
-          }}
-        >
-          Show/hide counter
-        </button> */}
-      </>
+      </section>
     );
   }
 }
